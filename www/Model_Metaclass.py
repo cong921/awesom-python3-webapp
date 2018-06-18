@@ -4,6 +4,8 @@
 # @Date:   2018-04-21 16:59:18
 # @Last Modified by:   Lnb
 # @Last Modified time: 2018-04-21 17:34:14
+import logging
+from www.orm import Field
 class ModelMetaclass(type):
     def __new__(cls,name,bases,attrs):
         # 排除Model类本身:

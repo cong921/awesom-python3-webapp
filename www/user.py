@@ -11,7 +11,7 @@ class User(Model):
 
     id=IntegerField(primary_key=True)
     name=StringField()
-    __init__():
+    def __init__(self):
         #创建实例
         user=User(id=123,name='Michael')
         #存入数据库:
@@ -21,3 +21,5 @@ class User(Model):
         user=yield from User.find('123')
         user=User(id=123,name='Michael')
         yield from user.save()
+if __name__ == '__main__':
+    user=User()
