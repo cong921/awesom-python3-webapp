@@ -5,8 +5,11 @@
 # @Last Modified by:   Lnb
 # @Last Modified time: 2018-04-21 22:09:00
 # 
-import asyncio,logging
+import asyncio
+import logging
+from logging import log
 import aiomysql
+
 @asyncio.coroutine
 def create_pool(loop,**kw):
     logging.info('create database connection pool...')
@@ -52,7 +55,7 @@ def execute(sql,args):
             raise
         return affected
 
-class Model(dict,metaclass=ModelMetaclass):
+class Model(dict,metaclass=ModelMetaclass):  # @UndefinedVariable
 
     def __init__(self,**kw):
         super(Model,self).__init__(**kw)
@@ -81,7 +84,7 @@ class Model(dict,metaclass=ModelMetaclass):
     @asyncio.coroutine
     def find(cls,pk):
         ' find object by primary key.'
-        rs=yield from select ('%s where `%s`=?'%(cls.__select__,clas.__primary_key__),[pk],1)
+        rs=yield from select ('%s where `%s`=?'%(cls.__select__,cls.__primary_key__),[pk],1)
         if(len(rs)==0):
             return None
         return cls(**rs[0])
@@ -95,7 +98,7 @@ class Model(dict,metaclass=ModelMetaclass):
             logging.warn('failed to insert record:affected rows:%s'% rows)
 
     @asyncio.coroutine
-    def findAll(cls,where=None,args=None,**kw):
+    def findAll(cls,where=None,args=None,**kw):  #  @NoSelf
         ' find objects by where clause.'
         sql=[cls.__select__]
         if where:
@@ -118,17 +121,17 @@ class Model(dict,metaclass=ModelMetaclass):
                 args.extend(limit)
             else:
                 raise ValueError('Invalid limit value:%s'%str(limit))
-        rs=await select(''.join(sql),args)
+        rs=await select(" ".join(sql), args)
         return [cls(**r) for r in rs]
 
     @asyncio.coroutine
-    def findNumber(cls,selectField,where=None,args=None):
+    def findNumber(cls,selectField,where=None,args=None):  # @NoSelf
         ' find number by select and where.'
         sql=['select %s _num_ from `%s`'%(selectField,cls.__table__)]
         if where:
             sql.append('where')
             sql.append(where)
-        rs=await select(''.join(sql),args,1)
+        rs=await select(' '.join(sql),args,1)  # @UndefinedVariable
         if len(rs)==0:
             return None
             return rs[0]['_num_']
@@ -137,13 +140,13 @@ class Model(dict,metaclass=ModelMetaclass):
     def update(self):
         args=list(map(self.getValue,self.__fields__))
         args.append(self.getValue(self.__primary_key__))
-        rows=await execute(self.__update__,args)
+        rows=await execute(self.__update__,args)  # @UndefinedVariable
         if rows!=1:
             logging.warn('failed to update by primary key:affected rows:%s'%rows)
     @asyncio.coroutine
     def remove(self):
         args=[self.getValue(self.__primary_key__)]
-        rows=await execute(self__delete__,args)
+        rows=await execute(self__delete__,args)  # @UndefinedVariable
         if rows!=1:
             logging.warn('failed to remove by primary key: affected rows:%s'%rows)
 
@@ -162,3 +165,23 @@ class StringField(Field):
 
     def __init__(self,name=None,primary_key=False,default=None,ddl='varchar(100'):
         super().__init__(name,ddl,primary_key,default)
+
+class BooleanField(Field):
+    def __init__(self,name=None,default=False):
+        super().__init__(name,'boolean',False,default)
+        
+class IntegerField(Field):
+
+    def __init__(self, name=None, primary_key=False, default=0):
+        super().__init__(name, 'bigint', primary_key, default)
+
+class FloatField(Field):
+
+    def __init__(self, name=None, primary_key=False, default=0.0):
+        super().__init__(name, 'real', primary_key, default)
+
+class TextField(Field):
+
+    def __init__(self, name=None, default=None):
+        super().__init__(name, 'text', False, default)
+
