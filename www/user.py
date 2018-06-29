@@ -4,7 +4,7 @@
 # @Date:   2018-04-21 12:26:58
 # @Last Modified by:   Lnb
 # @Last Modified time: 2018-04-21 21:32:05
-from orm import Model,StringField,IntegerField
+from www.orm import Model,StringField,IntegerField
 
 
 class User(Model):

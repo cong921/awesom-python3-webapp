@@ -3,20 +3,24 @@ import asyncio,os,json,time
 from datetime import datetime
 from aiohttp import web
 from enum import auto
-from www.coroweb import add_routes, add_static
+from www.coroweb import add_routes, add_static, get
 from www import orm
 from jinja2 import Environment, FileSystemLoader
+from www.user import User
 
 def init_jinja2(app,**kw):
     logging.info('init jinja2...')
     options=dict(
         autoescape=kw.get('autoescape',True),
         block_start_string=kw.get('block_start_string','{%'),
-        block_end_string=kw.get('block-end-string','%}'),
+        block_end_string=kw.get('block_end_string','%}'),
         variable_start_string=kw.get('variable_start_string','{{'),
         variable_end_string=kw.get('variable_end_string','}}'),
         auto_reload=kw.get('auto_reload',True)
         )
+    print("============")
+    print(options)
+    print("============")
     path=kw.get('path',None)
     if path is None:
         path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'templates')
@@ -110,10 +114,10 @@ loop=asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
         
-                
+
         
-def index(request):
-    return web.Response(body=b'<h1>Awesome</h1>', headers={'content-type':'text/html'})
+# def index(request):
+#     return web.Response(body=b'<h1>Awesome</h1>', headers={'content-type':'text/html'})
 
 
 # @asyncio.coroutine
