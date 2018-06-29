@@ -17,17 +17,16 @@ import asyncio
 
 def get(path):
     def decorator(func):
-        @functools.warps(func)
+        @functools.wraps(func)
         def wrapper(*args,**kw):
             return func(*args,**kw)
         wrapper.__method__='GET'
         wrapper.__route__=path
         return wrapper
     return decorator
-
 def post(path):
     def decorator(func):
-        @functools(func)
+        @functools.warps(func)
         def wrapper(*args,**kw):
             return func(*args,**kw)
         wrapper.__method__="POST"
@@ -36,32 +35,41 @@ def post(path):
     return decorator
 def get_required_kw_args(fn):
     args=[]
-    params=inspect.signaure(fn).parameters
+    params=inspect.signature(fn).parameters
     for name,param in params.items():
         if param.kind==inspect.Parameter.KEYWORD_ONLY and param.default==inspect.Parameter.empty:
             args.append(name)
     return tuple(args)
-
+def foobar(a:int,b:"it's b",c:str=5):
+    return a,b,c
+print(get_required_kw_args(foobar))
 def get_named_kw_args(fn):            
     args=[]
     params=inspect.signature(fn).parameters
-    for name,param in params.item():
+    print(params)
+    for name,param in params.items():
+        print(param.kind)
+        print(inspect.Parameter.KEYWORD_ONLY)
         if param.kind==inspect.Parameter.KEYWORD_ONLY:
             args.append(name)
     return tuple(args)
+# print(get_named_kw_args(foobar))
 
-def has_name_kw_args(fn):
+def has_named_kw_args(fn):
     params=inspect.signature(fn).parameters
     for name,param in params.items():
+        print(param.kind)
+        print(inspect.Parameter.KEYWORD_ONLY)
         if param.kind==inspect.Parameter.KEYWORD_ONLY:
             return True
-
+print(has_named_kw_args(foobar))
 def has_var_kw_arg(fn):
     params=inspect.signature(fn).parameters
     for name,param in params.items():
-        if param.kind==inspect.Parameter.KEYWORD_ONLY:
+        if param.kind==inspect.Parameter.VAR_KEYWORD:
             return True
         
+# print(has_name_kw_args(foobar))
 def has_request_arg(fn):
     sig=inspect.signature(fn)
     params=sig.parameters
@@ -79,16 +87,16 @@ class RequestHandler(object):
         self._func=fn
         self._has_request_arg=has_request_arg(fn)
         self._has_var_kw_arg=has_var_kw_arg(fn)
-        self._has_name_kw_args=has_name_kw_args(fn)
+        self._has_name_kw_args=has_named_kw_args(fn)
         self._named_kw_args=get_named_kw_args(fn)
         self._required_kw_args=get_required_kw_args(fn)
     
     async def ___call__(self,request):
         kw=None
-        if self._has_var_kw_arg or self._has_name_kw_args or self._required_kw_args:
+        if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             if request.method=='POST':
                 if not request.content_type:
-                    return web.HTTPBadRequest('Missing Content_Type.')
+                    return web.HTTPBadRequest('Missing Content-Type.')
                 ct=request.content_type.lower()
                 if ct.startswith('application/json'):
                     params=await request.json()
@@ -112,22 +120,22 @@ class RequestHandler(object):
             if not self._has_var_kw_arg and self._named_kw_args:
                 #remove all unamed kw:
                 copy=dict()
-                for name,in self._named_kw_args:
+                for name in self._named_kw_args:
                     if name in kw:
                         copy[name]=kw[name]                
                 kw=copy
             #check named arg:
             for k,v in request.match_info.items():
                 if k in kw:
-                    logging.warning('Duplicate arg_name in named arg and kw args:%s' % k)
-                    kw[k]=vars()
+                    logging.warning('Duplicate arg name in named arg and kw args:%s' % k)
+                    kw[k]=v
         if self._has_request_arg:
             kw['request']=request
         #check required kw:
         if self._required_kw_args:
             for name in self._required_kw_args:
                 if not name in kw:
-                    return web.HTTPBadReqeust('Missing argument: %s' % name)
+                    return web.HTTPBadRequest('Missing argument: %s' % name)
         logging.info('call with args: %s' % str(kw))
         try:
             r=await self._func(**kw)
@@ -150,15 +158,20 @@ def add_route(app,fn):
     app.router.add_route(method,path,RequestHandler(app,fn))
 def add_routes(app,module_name):
     n=module_name.rfind('.')
+    print("n的值是:" , n)
     if n==(-1):
         mod=__import__(module_name,globals(),locals())
+        
+        print(mod)
     else:
         name=module_name[n+1:]
         mod=getattr(__import__(module_name[:n],globals(),locals(),[name]),name)
     for attr in dir(mod):
+        print(attr)
         if attr.startswith('_'):
             continue
         fn=getattr(mod,attr)
+        print(fn)
         if callable(fn):
             method=getattr(fn, '__method__',None)
             path=getattr(fn,'__route__',None)
