@@ -6,11 +6,12 @@ Created on 2018年6月26日
 '''
 from www.user import User
 from www.coroweb import get
+import asyncio
 ' urlhandlers '
 
-@get('/')       
-def index(request):
-    users=yield from User.findAll()
+@get('/')
+async def index(request):
+    users=await User.findAll()
     return {
         '__template__':'test.html',
         'users':users

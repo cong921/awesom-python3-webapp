@@ -1,4 +1,4 @@
-import logging; logging.basicConfig(level=logging.INFO)
+import logging; logging.basicConfig(level=logging.DEBUG)
 import asyncio,os,json,time
 from datetime import datetime
 from aiohttp import web
@@ -18,18 +18,18 @@ def init_jinja2(app,**kw):
         variable_end_string=kw.get('variable_end_string','}}'),
         auto_reload=kw.get('auto_reload',True)
         )
-    print("============")
-    print(options)
-    print("============")
+    logging.debug("============")
+    logging.debug("============")
+    logging.debug(options)
     path=kw.get('path',None)
     if path is None:
         path=os.path.join(os.path.dirname(os.path.abspath(__file__)),'templates')
-        print(path)
+        logging.debug(path)
     logging.info('set jinja2 template path: %s'% path)
     env=Environment(loader=FileSystemLoader(path),**options)
     filters=kw.get('filters',None)
     if filters is not None:
-        print(filters.items())
+        logging.debug(filters.items())
         for name,f in filters.items():
             env.filters[name]=f
     app['__templating__']=env

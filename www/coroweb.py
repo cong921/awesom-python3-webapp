@@ -26,7 +26,7 @@ def get(path):
     return decorator
 def post(path):
     def decorator(func):
-        @functools.warps(func)
+        @functools.wraps(func)
         def wrapper(*args,**kw):
             return func(*args,**kw)
         wrapper.__method__="POST"
@@ -87,13 +87,14 @@ class RequestHandler(object):
         self._func=fn
         self._has_request_arg=has_request_arg(fn)
         self._has_var_kw_arg=has_var_kw_arg(fn)
-        self._has_name_kw_args=has_named_kw_args(fn)
+        self._has_named_kw_args=has_named_kw_args(fn)
         self._named_kw_args=get_named_kw_args(fn)
         self._required_kw_args=get_required_kw_args(fn)
     
-    async def ___call__(self,request):
+    async def __call__(self,request):
         kw=None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
+            logging.error(kw)
             if request.method=='POST':
                 if not request.content_type:
                     return web.HTTPBadRequest('Missing Content-Type.')
@@ -109,6 +110,9 @@ class RequestHandler(object):
                 else:
                     return web.HTTPBadRequest('Unsupported Content-Type: %s' % request.content_type)
             if request.method=='GET':
+                print('++++++++++++++')
+                print(kw)
+                print('++++++++++++++')
                 qs=request.query_string
                 if qs:
                     kw=dict()
@@ -148,6 +152,7 @@ def add_static(app):
     logging.info('add static %s =>%s'%('/static/',path))
     
 def add_route(app,fn):
+    logging.error("diguile")
     method=getattr(fn,'__method__',None)
     path=getattr(fn,'__route__',None)
     if path is None or method is None:
@@ -173,6 +178,8 @@ def add_routes(app,module_name):
             continue
         fn=getattr(mod,attr)
         print(fn)
+        logging.debug(callable(fn))
+        logging.debug(fn.__name__)
         if callable(fn):
             method=getattr(fn, '__method__',None)
             path=getattr(fn,'__route__',None)
