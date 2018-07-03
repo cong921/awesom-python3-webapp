@@ -190,7 +190,11 @@ class Model(dict, metaclass=ModelMetaclass):
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
         rs = await select(' '.join(sql), args)
-        print([cls(**r) for r in rs])
+        print(rs)
+        print(type(rs))
+        print(cls)
+        for r in rs:
+            print(cls(**r))
         return [cls(**r) for r in rs]
 
     @classmethod
