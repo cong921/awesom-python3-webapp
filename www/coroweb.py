@@ -179,7 +179,7 @@ def add_routes(app,module_name):
         fn=getattr(mod,attr)
         print(fn)
         logging.debug(callable(fn))
-        logging.debug(fn.__name__)
+#         logging.debug(fn.__name__)
         if callable(fn):
             method=getattr(fn, '__method__',None)
             path=getattr(fn,'__route__',None)
