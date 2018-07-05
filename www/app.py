@@ -6,7 +6,6 @@ from enum import auto
 from www.coroweb import add_routes, add_static, get
 from www import orm
 from jinja2 import Environment, FileSystemLoader
-from www.user import User
 from www.handlers import COOKIE_NAME, cookie2user
 
 def init_jinja2(app,**kw):
@@ -125,7 +124,7 @@ async def init(loop):
     init_jinja2(app,filters=dict(datetime=datetime_filter))
     add_routes(app,'handlers')
     add_static(app)
-    srv=await loop.create_server(app.make_handler(),'127.0.0.1',9000)
+    srv=await loop.create_server(app.make_handler(),'127.0.0.1',80)
     logging.info('server started at http://127.0.0.1:9000...')
     return srv
 loop=asyncio.get_event_loop()
