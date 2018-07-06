@@ -14,7 +14,7 @@ import re
 from aiohttp import web
 import json
 from config import configs
-import logging
+import logging,markdown2
 ' urlhandlers '
 
 def user2cookie(user,max_age):
@@ -56,15 +56,17 @@ async def cookie2user(cookie_str):
     
 
 @get('/')
-async def index(request):
-    summary='Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tepor incididunt ut labore et dolore magna aliqua.'
-    blogs=[
-        Blog(id='1',name='Test Blog',summary=summary,created_at=time.time()-120),
-        Blog(id='2',name='Something New',summary=summary,created_at=time.time()-3600),
-        Blog(id='3',name='Learn Swift',summary=summary,created_at=time.time()-7200)
-        ]
+async def index(*,page='1'):
+    page_index=get_page_index(page)
+    num=await Blog.findNumber('count(id)')
+    page=Page(num)
+    if num==0:
+        blogs=[]
+    else:
+        blogs=await Blog.findAll(orderBy=' created_at desc',limit=(page.offset,page.limit))
     return {
         '__template__':'blogs.html',
+        'page':page,
         'blogs':blogs
         }
 @get('/register')
@@ -200,3 +202,39 @@ def manage_blogs(*,page='1'):
         '__template__':'manage_blogs.html',
         'page_index':get_page_index(page)
         }
+@get('/blog/{id}')
+async def blog(id):
+    blog=await Blog.find(id)
+    blog.html_content=markdown2.markdown(blog.content)
+    return {
+        '__template__':'blog.html',
+        'blog':blog,
+        }
+
+@get('/manage/blogs/edit')
+def manage_edit_blog(*,id):
+    return {
+        '__template__':'manage_blog_edit.html',
+        'id':id,
+        'action':'/api/blogs/%s' % id
+        }
+@get('/api/blogs/{id}')
+async def api_get_blog(*,id):
+    blog=await Blog.find(id)
+    return blog
+@post('/api/blogs/{id}')
+async def api_post_blog(request,*,id,name,content,summary):
+    check_admin(request)
+    if not name or not name.strip():
+        raise APIValueError('name', 'name cannot be empty.')
+    if not summary or not summary.strip():
+        raise APIValueError('summary', 'summary cannot be empty.')
+    if not content or not content.strip():
+        raise APIValueError('content', 'content cannot be empty.')
+    blog=await Blog.find(id)
+    blog.name=name.strip()
+    blog.summary=summary.strip()
+    blog.content=content.strip()
+    await Blog.update(blog)
+    return 'redirect:/manage/blogs'
+    
