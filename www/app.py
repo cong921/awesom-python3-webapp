@@ -3,10 +3,10 @@ import asyncio,os,json,time
 from datetime import datetime
 from aiohttp import web
 from enum import auto
-from www.coroweb import add_routes, add_static, get
-from www import orm
+from coroweb import add_routes, add_static, get
+import orm
 from jinja2 import Environment, FileSystemLoader
-from www.handlers import COOKIE_NAME, cookie2user
+from handlers import COOKIE_NAME, cookie2user
 
 def init_jinja2(app,**kw):
     logging.info('init jinja2...')

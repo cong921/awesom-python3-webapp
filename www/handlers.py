@@ -4,16 +4,16 @@ Created on 2018年6月26日
 
 @author: taihao
 '''
-from www.models import User, Blog, next_id
-from www.coroweb import get, post
+from models import User, Blog, next_id
+from coroweb import get, post
 import asyncio
 import time
-from www.apis import APIValueError, APIError, APIPermissionError, Page
+from apis import APIValueError, APIError, APIPermissionError, Page
 import hashlib
 import re
 from aiohttp import web
 import json
-from www.config import configs
+from config import configs
 import logging
 ' urlhandlers '
 

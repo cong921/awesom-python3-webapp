@@ -4,7 +4,7 @@ Created on 2018年6月28日
 
 @author: taihao
 '''
-from www import config_default
+import config_default
 configs=config_default.configs
 
 class Dict(dict):

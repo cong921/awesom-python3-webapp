@@ -5,8 +5,8 @@ Created on 2018锟斤拷6锟斤拷21锟斤拷
 @author: taihao
 '''
 import asyncio
-from www.models import User
-from www import orm
+from models import User
+import orm
 from aiomysql import pool
 async def test(loop):
     await orm.create_pool(loop,user='root',password='123456',db='awesome')
