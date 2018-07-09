@@ -6,8 +6,10 @@ Created on 2018��6��21��
 '''
 import time, uuid
 from orm import Model, StringField, BooleanField, FloatField, TextField
+import logging
 
 def next_id():
+#     logging.error('%015d%s000' % (int(time.time()*1000),uuid.uuid4().hex))
     return '%015d%s000' % (int(time.time()*1000),uuid.uuid4().hex)
 
 class User(Model):

@@ -13,7 +13,7 @@ class Dict(dict):
     Simple dict but support access as x.y style.
     '''
     def __init__(self,name=(),values=(),**kw):
-        super(Dict,self).__init__(**kw)
+        super(Dict,self).__init__(self,**kw)
         for k,v in zip(name,values):
             self[k]=v
         

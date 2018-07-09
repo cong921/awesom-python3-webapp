@@ -6,7 +6,7 @@
 
     <div class='uk-width-medium-3-4'>
         {% for blog in blogs %}
-            <article class="uk-articl">
+            <article class="uk-article">
                 <h2><a href="/blog/{{ blog.id}}">{{blog.name}}</a></h2>
                 <p class="uk-article-meta">发表于{{blog.created_at|datetime}}</p>
                 <p>{{blog.summary}}</p>
@@ -14,6 +14,7 @@
             </article>
             <hr class="uk-article-divider">
         {% endfor %}
+         
     </div>
         <div class="uk-width-medium-1-4">
         <div class="uk-panel uk-panel-header">

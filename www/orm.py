@@ -43,17 +43,39 @@ async def select(sql, args, size=None):
         logging.info('rows returned: %s' % len(rs))
         return rs
 
+# async def execute(sql, args, autocommit=True):
+#     logging.error(args)
+#     logging.error(sql)
+#     log(sql)
+#     async with __pool.get() as conn:
+#         if not autocommit:
+#             await conn.begin()
+#         try:
+#             async with conn.cursor(aiomysql.DictCursor) as cur:
+#                 await cur.execute(sql.replace('?', '%s'), args)
+#                 affected = cur.rowcount
+#                 await cur.close()
+#             if not autocommit:
+#                 await conn.commit()
+#         except BaseException as e:
+#             logging.error('出错了么')
+#             if not autocommit:
+#                 await conn.rollback()
+#             raise
+#         return affected
 async def execute(sql, args, autocommit=True):
     log(sql)
-    async with __pool.get() as conn:
+    with (await __pool) as conn:
         if not autocommit:
             await conn.begin()
         try:
-            async with conn.cursor(aiomysql.DictCursor) as cur:
-                await cur.execute(sql.replace('?', '%s'), args)
-                affected = cur.rowcount
+            cur = await conn.cursor()
+            await cur.execute(sql.replace('?', '%s'), args)
+            affected = cur.rowcount
+            await cur.close()
             if not autocommit:
                 await conn.commit()
+            conn.close()
         except BaseException as e:
             if not autocommit:
                 await conn.rollback()
@@ -214,7 +236,7 @@ class Model(dict, metaclass=ModelMetaclass):
     @classmethod
     async def find(cls, pk):
         ' find object by primary key. '
-        rs = await select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
+        rs = await select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)#__select__
         if len(rs) == 0:
             return None
         return cls(**rs[0])
@@ -232,9 +254,10 @@ class Model(dict, metaclass=ModelMetaclass):
         rows = await execute(self.__update__, args)
         if rows != 1:
             logging.warn('failed to update by primary key: affected rows: %s' % rows)
-
+    @classmethod       
     async def remove(self):
-        args = [self.getValue(self.__primary_key__)]
+        args = [self.getValueOrDefault(self,key=self.__primary_key__)]
+        logging.error(args)
         rows = await execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)

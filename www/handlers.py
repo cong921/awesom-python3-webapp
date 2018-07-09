@@ -15,6 +15,8 @@ from aiohttp import web
 import json
 from config import configs
 import logging,markdown2
+from apis import APIResourceNotFoundError
+from models import Comment
 ' urlhandlers '
 
 def user2cookie(user,max_age):
@@ -237,4 +239,41 @@ async def api_post_blog(request,*,id,name,content,summary):
     blog.content=content.strip()
     await Blog.update(blog)
     return 'redirect:/manage/blogs'
+
+@post('/api/blogs/{id}')    
+async def api_update_blog(id,request,*,name,summary,content):
+    check_admin(request)
+    blog=await Blog.find(id)
+    if not name or not name.strip():
+        raise APIValueError('name','name cannot be empty.')
+    if not summary or not summary.strip():
+        raise APIValueError('summary','summary cannot be empty.')
+    if not content or not content.strip():
+        raise APIValueError('content','content cannot be empty.')
+    blog.name=name
+    blog.content=content
+    blog.summary=summary
+    await blog.update()
+    return blog
+@post('/api/blogs/{id}/delete')
+async def api_delete_blog(request,*,id):
+    check_admin(request)
+    blog=await Blog.find(id)
+    await blog.remove()
+    return dict(id=id)
+@post('/api/blogs/{id}/comments')
+async def api_create_comment(id=id,*,content,request):
+    logging.error(id)
+    user=request.__user__
+    if user is None:
+        raise APIPermissionError('Please signin first.')
+    if not content or not content.strip():
+        raise APIPermissionError('content')
+    blog=await Blog.find(id)
+    if blog is None:
+        raise APIResourceNotFoundError('Blog')
+    comment=Comment(blog_id=blog.id,user_name=user.name,user_image=user.image,content=content.strip())
+    await comment.save()
+    return comment
+    
     
