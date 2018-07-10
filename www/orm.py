@@ -75,7 +75,6 @@ async def execute(sql, args, autocommit=True):
             await cur.close()
             if not autocommit:
                 await conn.commit()
-            conn.close()
         except BaseException as e:
             if not autocommit:
                 await conn.rollback()

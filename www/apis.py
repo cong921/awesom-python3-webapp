@@ -31,7 +31,7 @@ class APIResourceNotFoundError(APIError):
     Indicate the resource was not found.The data specifies the resource name.
     '''
     def __init__(self,field,message=''):
-        super(APIResourceNotFoundError,self).__init(self,'value:notfound',field,message)
+        super(APIResourceNotFoundError,self).__init__(self,'value:notfound',field,message)
 class APIPermissionError(APIError):
     '''
     Indicate the api has no permisssion.

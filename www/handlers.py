@@ -262,7 +262,7 @@ async def api_delete_blog(request,*,id):
     await blog.remove()
     return dict(id=id)
 @post('/api/blogs/{id}/comments')
-async def api_create_comment(id=id,*,content,request):
+async def api_create_comment(*,id,content,request):
     logging.error(id)
     user=request.__user__
     if user is None:
@@ -272,8 +272,45 @@ async def api_create_comment(id=id,*,content,request):
     blog=await Blog.find(id)
     if blog is None:
         raise APIResourceNotFoundError('Blog')
-    comment=Comment(blog_id=blog.id,user_name=user.name,user_image=user.image,content=content.strip())
+    comment=Comment(blog_id=blog.id,user_id=user.id,user_name=user.name,user_image=user.image,content=content.strip())
     await comment.save()
     return comment
+  
+@get('/api/comments')  
+async def api_comments(*,page='1'):
+    page_index=get_page_index(page)
+    num=await Comment.findNumber('count(id)')
+    p=Page(num,page_index)
+    if num == 0:
+        return dict(page=p,comments=())
+    comments=await Comment.findAll(orderBy='created_at desc',limit=(p.limit))
+    return dict(page=p,comments=comments)
     
-    
+@post('/api/comments/{id}/delete')
+async def api_delete_comments(id,request):
+    check_admin(request)
+    c=await Comment.find(id)
+    if c is None:
+        raise APIResourceNotFoundError('Comment')
+    await c.remove()
+    return dict(id=id)
+ 
+@get('/manage/comments')
+async def manage_comments(*, page='1'):
+    return {
+        '__template__': 'manage_comments.html',
+        'page_index': get_page_index(page)
+    }   
+
+@get('/manage/users')
+async def manage_users(*,page='1'):
+    return {
+        '__template__':'manage_users.html',
+        'page_index':get_page_index(page)
+        }
+@get('/manage/')
+async def manage(*,page='1'):
+    return {
+        '__template__':'manage.html',
+        'page_index':get_page_index(page)
+        }
