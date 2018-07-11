@@ -69,7 +69,8 @@ async def index(*,page='1'):
     return {
         '__template__':'blogs.html',
         'page':page,
-        'blogs':blogs
+        'page_index':page_index,
+        'blogs':blogs,
         }
 @get('/register')
 def register():
@@ -208,9 +209,11 @@ def manage_blogs(*,page='1'):
 async def blog(id):
     blog=await Blog.find(id)
     blog.html_content=markdown2.markdown(blog.content)
+    comments=await Comment.findAll(where=" `blog_id`=?",args=(blog.id))
     return {
         '__template__':'blog.html',
         'blog':blog,
+        'comments':comments
         }
 
 @get('/manage/blogs/edit')
