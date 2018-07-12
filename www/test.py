@@ -8,7 +8,6 @@ Created on 2018锟斤拷6锟斤拷21锟斤拷
 import asyncio
 from www.models import Blog
 import orm
-from orm import destory_pool
 async def test(loop):
     __pool=await orm.create_pool(loop,user='root',password='123456',db='awesome')
     blog=await Blog.find('0015308596041480350c664940b4db49d672cf97094abd8000')

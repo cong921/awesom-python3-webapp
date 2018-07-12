@@ -60,8 +60,9 @@ async def cookie2user(cookie_str):
 @get('/')
 async def index(*,page='1'):
     page_index=get_page_index(page)
+    print(page)
     num=await Blog.findNumber('count(id)')
-    page=Page(num)
+    page=Page(item_count=num,page_index=page_index,page_size=4)
     if num==0:
         blogs=[]
     else:
@@ -69,8 +70,7 @@ async def index(*,page='1'):
     return {
         '__template__':'blogs.html',
         'page':page,
-        'page_index':page_index,
-        'blogs':blogs,
+        'blogs':blogs
         }
 @get('/register')
 def register():
